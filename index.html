@@ -17,11 +17,11 @@
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 920px; background: var(--card); border-radius: 12px; padding: 24px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .container { width: 100%; max-width: 960px; background: var(--card); border-radius: 12px; padding: 24px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     h1 { font-size: 1.4rem; margin: 0 0 6px 0; }
     p.sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 20px 0; }
     .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab-btn { padding: 9px 16px; border: 1px solid var(--border); background: #f1f5f9; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text); }
+    .tab-btn { padding: 9px 14px; border: 1px solid var(--border); background: #f1f5f9; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text); font-size: 0.88rem; }
     .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     .panel { display: none; }
     .panel.active { display: block; }
@@ -29,13 +29,15 @@
     @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
-    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem; background: white; }
+    input[type="text"], input[type="password"], input[type="file"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem; background: white; }
+    input[type="range"] { width: 100%; }
     textarea { font-family: ui-monospace, monospace; resize: vertical; }
     button.action { padding: 10px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: var(--primary); color: white; width: 100%; }
     button.action:hover:not(:disabled) { background: var(--primary-hover); }
     button.action:disabled { background: #93c5fd; cursor: not-allowed; }
-    button.secondary { padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px; background: white; font-weight: 600; cursor: pointer; }
-    button.danger { padding: 9px 14px; border: none; border-radius: 8px; background: var(--danger); color: white; font-weight: 600; cursor: pointer; }
+    button.secondary { padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px; background: white; font-weight: 600; cursor: pointer; width: 100%; }
+    button.secondary:hover { background: #f1f5f9; }
+    button.danger { padding: 9px 14px; border: none; border-radius: 8px; background: var(--danger); color: white; font-weight: 600; cursor: pointer; width: 100%; }
     .status { margin-top: 10px; font-size: 0.88rem; color: var(--primary); font-weight: 500; }
     .error { margin-top: 10px; font-size: 0.88rem; color: var(--danger); background: #fef2f2; padding: 8px 12px; border-radius: 6px; display: none; }
     audio { width: 100%; margin-top: 10px; }
@@ -45,16 +47,17 @@
 <body>
 
 <div class="container">
-  <h1>🎛️ AI Audio Studio (Web Edition)</h1>
-  <p class="sub">Transkrip Audio + Timestamp, Voice Cloning Kustom, dan Sinkronisasi Subtitle (.SRT) langsung dari browser.</p>
+  <h1>🎛️ AI Audio Studio (All-in-One Online)</h1>
+  <p class="sub">Transkrip Audio + Timestamp, 30 Suara Neural Bawaan, serta Voice Cloning Kustom dalam satu web.</p>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('stt', this)">🎧 1. Speech-to-Text (Timestamp)</button>
-    <button class="tab-btn" onclick="switchTab('clone', this)">🧬 2. Voice Cloning & Sync SRT</button>
-    <button class="tab-btn" onclick="switchTab('library', this)">🗂️ 3. Koleksi Suara Permanen</button>
+    <button class="tab-btn active" onclick="switchTab('stt', this)">🎧 1. Speech-to-Text</button>
+    <button class="tab-btn" onclick="switchTab('std', this)">🗣️ 2. TTS 30 Suara Bawaan</button>
+    <button class="tab-btn" onclick="switchTab('clone', this)">🧬 3. Voice Cloning</button>
+    <button class="tab-btn" onclick="switchTab('library', this)">🗂️ 4. Koleksi Suara</button>
   </div>
 
-  <!-- TAB 1: SPEECH TO TEXT (GEMINI API) -->
+  <!-- TAB 1: SPEECH TO TEXT -->
   <div id="tab-stt" class="panel active">
     <div class="grid-2">
       <div>
@@ -88,7 +91,60 @@
     </div>
   </div>
 
-  <!-- TAB 2: VOICE CLONING & SYNC SRT (COLAB GPU) -->
+  <!-- TAB 2: 30 SUARA BAWAAN (EDGE-TTS SERVERLESS) -->
+  <div id="tab-std" class="panel">
+    <div class="grid-2">
+      <div>
+        <div class="form-group">
+          <label>Pilih Karakter Suara (30 Pilihan Natural)</label>
+          <select id="stdVoiceSelect"></select>
+        </div>
+        <button class="secondary" id="stdPreviewBtn" onclick="previewStdVoice()">🎧 Dengarkan Sampel Suara Ini</button>
+        <audio id="stdPreviewPlayer" controls></audio>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Kecepatan Bicara: <span id="rateVal">0%</span></label>
+          <input type="range" id="stdRate" min="-30" max="30" value="0" step="5" oninput="document.getElementById('rateVal').textContent = (this.value >= 0 ? '+' : '') + this.value + '%'">
+        </div>
+        <div class="form-group">
+          <label>Nada Suara: <span id="pitchVal">0Hz</span></label>
+          <input type="range" id="stdPitch" min="-15" max="15" value="0" step="1" oninput="document.getElementById('pitchVal').textContent = (this.value >= 0 ? '+' : '') + this.value + 'Hz'">
+        </div>
+      </div>
+
+      <div>
+        <div class="form-group">
+          <label>Mode Input</label>
+          <select id="stdMode" onchange="toggleStdMode()">
+            <option value="text">📝 Tulis Naskah Teks</option>
+            <option value="srt">⏱️ Upload File Subtitle (.SRT)</option>
+          </select>
+        </div>
+
+        <div id="stdTextGroup" class="form-group">
+          <label>Naskah Voice-Over (Inggris, Arab, Indonesia)</label>
+          <textarea id="stdText" rows="8" placeholder="Tulis naskah yang ingin dibacakan di sini..."></textarea>
+        </div>
+
+        <div id="stdSrtGroup" class="form-group" style="display:none;">
+          <label>Unggah File Subtitle (.SRT)</label>
+          <input type="file" id="stdSrtFile" accept=".srt">
+        </div>
+
+        <button class="action" id="stdGenBtn" onclick="runStandardTTS()">🔊 Generate Suara</button>
+        <div id="stdStatus" class="status"></div>
+        <div id="stdError" class="error"></div>
+        <audio id="stdOutputPlayer" controls></audio>
+        <div class="row-btns">
+          <a id="downloadStdLink" style="display:none; width:100%;" download="voice_over_bawaan.mp3">
+            <button class="secondary">💾 Unduh Hasil Audio</button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: VOICE CLONING (COLAB GPU) -->
   <div id="tab-clone" class="panel">
     <div class="form-group">
       <label>🔗 URL Mesin GPU Google Colab (https://....gradio.live)</label>
@@ -116,7 +172,7 @@
 
         <div id="cloneTextGroup" class="form-group">
           <label>Teks Naskah (Inggris atau Arab)</label>
-          <textarea id="cloneText" rows="7" placeholder="Masukkan naskah yang akan dibacakan dengan suara pilihan..."></textarea>
+          <textarea id="cloneText" rows="7" placeholder="Masukkan naskah yang akan dibacakan dengan suara kustom..."></textarea>
         </div>
 
         <div id="cloneSrtGroup" class="form-group" style="display:none;">
@@ -130,16 +186,16 @@
         <audio id="cloneOutputPlayer" controls></audio>
         <div class="row-btns">
           <a id="downloadCloneLink" style="display:none; width:100%;" download="hasil_voice_cloning.wav">
-            <button class="secondary" style="width:100%;">💾 Unduh Hasil Audio (.WAV)</button>
+            <button class="secondary">💾 Unduh Hasil Audio (.WAV)</button>
           </a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB 3: KOLEKSI SUARA PERMANEN (INDEXEDDB BROWSER) -->
+  <!-- TAB 4: KOLEKSI SUARA PERMANEN -->
   <div id="tab-library" class="panel">
-    <p class="sub">Rekaman sampel suara disimpan permanen di penyimpanan browser perangkat Anda (tidak terhapus walau halaman ditutup).</p>
+    <p class="sub">Rekaman sampel suara disimpan permanen di penyimpanan browser perangkat Anda.</p>
     <div class="grid-2">
       <div>
         <div class="form-group">
@@ -173,12 +229,62 @@
 </div>
 
 <script>
-  // --- NAVIGASI TAB ---
+  const STD_VOICES = [
+    { label: "🇺🇸 Brian - Pria (English US, Deep & Narasi YouTube)", id: "en-US-BrianNeural", lang: "en" },
+    { label: "🇺🇸 Andrew - Pria (English US, Hangat & Storytelling)", id: "en-US-AndrewNeural", lang: "en" },
+    { label: "🇺🇸 Christopher - Pria (English US, Tegas & Dokumenter)", id: "en-US-ChristopherNeural", lang: "en" },
+    { label: "🇺🇸 Steffan - Pria (English US, Modern & Podcast)", id: "en-US-SteffanNeural", lang: "en" },
+    { label: "🇺🇸 Eric - Pria (English US, Berwibawa & Kalem)", id: "en-US-EricNeural", lang: "en" },
+    { label: "🇺🇸 Emma - Wanita (English US, Jernih & Natural)", id: "en-US-EmmaNeural", lang: "en" },
+    { label: "🇺🇸 Ava - Wanita (English US, Ekspresif & Ramah)", id: "en-US-AvaNeural", lang: "en" },
+    { label: "🇺🇸 Jenny - Wanita (English US, Percakapan Santai)", id: "en-US-JennyNeural", lang: "en" },
+    { label: "🇺🇸 Aria - Wanita (English US, Informatif & Berita)", id: "en-US-AriaNeural", lang: "en" },
+    { label: "🇺🇸 Michelle - Wanita (English US, Lembut & Edukasi)", id: "en-US-MichelleNeural", lang: "en" },
+    { label: "🇬🇧 Ryan - Pria (English UK, Berwibawa & Klasik)", id: "en-GB-RyanNeural", lang: "en" },
+    { label: "🇬🇧 Thomas - Pria (English UK, Ramah & Storytelling)", id: "en-GB-ThomasNeural", lang: "en" },
+    { label: "🇬🇧 Sonia - Wanita (English UK, Elegan & Jelas)", id: "en-GB-SoniaNeural", lang: "en" },
+    { label: "🇬🇧 Libby - Wanita (English UK, Muda & Dinamis)", id: "en-GB-LibbyNeural", lang: "en" },
+    { label: "🇦🇺 William - Pria (English AU, Santai & Natural)", id: "en-AU-WilliamNeural", lang: "en" },
+    { label: "🇦🇺 Natasha - Wanita (English AU, Hangat & Jernih)", id: "en-AU-NatashaNeural", lang: "en" },
+    { label: "🇨🇦 Liam - Pria (English CA, Bersih & Narasi)", id: "en-CA-LiamNeural", lang: "en" },
+    { label: "🇨🇦 Clara - Wanita (English CA, Lembut & Ekspresif)", id: "en-CA-ClaraNeural", lang: "en" },
+    { label: "🇸🇦 Hamed - Pria (Arab Saudi, Tegas & Jelas)", id: "ar-SA-HamedNeural", lang: "ar" },
+    { label: "🇸🇦 Zariyah - Wanita (Arab Saudi, Lembut & Natural)", id: "ar-SA-ZariyahNeural", lang: "ar" },
+    { label: "🇪🇬 Shakir - Pria (Arab Mesir, Hangat & Narator)", id: "ar-EG-ShakirNeural", lang: "ar" },
+    { label: "🇪🇬 Salma - Wanita (Arab Mesir, Ekspresif & Ramah)", id: "ar-EG-SalmaNeural", lang: "ar" },
+    { label: "🇦🇪 Hamdan - Pria (Arab UEA, Modern & Jernih)", id: "ar-AE-HamdanNeural", lang: "ar" },
+    { label: "🇦🇪 Fatima - Wanita (Arab UEA, Lembut & Elegan)", id: "ar-AE-FatimaNeural", lang: "ar" },
+    { label: "🇯🇴 Taim - Pria (Arab Yordania, Fusha & Berwibawa)", id: "ar-JO-TaimNeural", lang: "ar" },
+    { label: "🇯🇴 Sana - Wanita (Arab Yordania, Fusha & Jernih)", id: "ar-JO-SanaNeural", lang: "ar" },
+    { label: "🇰🇼 Fahed - Pria (Arab Kuwait, Kalem & Informatif)", id: "ar-KW-FahedNeural", lang: "ar" },
+    { label: "🇰🇼 Noura - Wanita (Arab Kuwait, Natural & Hangat)", id: "ar-KW-NouraNeural", lang: "ar" },
+    { label: "🇮🇩 Ardi - Pria (Indonesia, Tegas & Informatif)", id: "id-ID-ArdiNeural", lang: "id" },
+    { label: "🇮🇩 Gadis - Wanita (Indonesia, Ramah & Natural)", id: "id-ID-GadisNeural", lang: "id" }
+  ];
+
+  const SAMPLE_TEXTS = {
+    en: "Hello! This is a preview of my voice for your YouTube storytelling or educational videos.",
+    ar: "مَرْحَبًا بِكُمْ، هَذِهِ عَيِّنَةٌ صَوْتِيَّةٌ لِتَجْرِبَةِ نَبْرَةِ الصَّوْتِ وَوُضُوحِ النُّطْقِ لِمُحْتَوَى الْيُوتْيُوب.",
+    id: "Halo! Ini adalah contoh suara saya untuk narasi video edukasi maupun konten YouTube Anda."
+  };
+
+  // Isi dropdown 30 suara bawaan
+  const stdSelectEl = document.getElementById('stdVoiceSelect');
+  STD_VOICES.forEach((v, idx) => {
+    stdSelectEl.innerHTML += `<option value="${idx}">${v.label}</option>`;
+  });
+
   function switchTab(tabId, btn) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
     btn.classList.add('active');
+  }
+
+  function toggleStdMode() {
+    const mode = document.getElementById('stdMode').value;
+    document.getElementById('stdTextGroup').style.display = mode === 'text' ? 'block' : 'none';
+    document.getElementById('stdSrtGroup').style.display = mode === 'srt' ? 'block' : 'none';
   }
 
   function toggleCloneMode() {
@@ -187,7 +293,6 @@
     document.getElementById('cloneSrtGroup').style.display = mode === 'srt' ? 'block' : 'none';
   }
 
-  // Simpan API Key & URL Colab di localStorage
   const geminiKeyEl = document.getElementById('geminiKey');
   const colabUrlEl = document.getElementById('colabUrl');
   geminiKeyEl.value = localStorage.getItem('gemini_key') || '';
@@ -195,7 +300,156 @@
   geminiKeyEl.addEventListener('change', () => localStorage.setItem('gemini_key', geminiKeyEl.value.trim()));
   colabUrlEl.addEventListener('change', () => localStorage.setItem('colab_url', colabUrlEl.value.trim()));
 
-  // --- INDEXEDDB UNTUK VOICE LIBRARY PERMANEN ---
+  // --- HELPER GABUNG AUDIO WAV DENGAN TIMESTAMP ---
+  function parseSRT(srtText) {
+    const regex = /\d+\s*\n(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*\n([\s\S]*?)(?=\n\s*\n|\Z)/g;
+    const entries = [];
+    let m;
+    const toSec = (t) => {
+      const [h, min, sMs] = t.trim().split(':');
+      const [s, ms] = sMs.replace('.', ',').split(',');
+      return (+h)*3600 + (+min)*60 + (+s) + (+ms)/1000;
+    };
+    while ((m = regex.exec(srtText.trim() + '\n\n')) !== null) {
+      const clean = m[3].replace(/<[^>]+>/g, '').replace(/\n/g, ' ').trim();
+      if (clean) entries.push({ start: toSec(m[1]), end: toSec(m[2]), text: clean });
+    }
+    return entries;
+  }
+
+  function audioBuffersToWav(buffersWithOffsets, totalDurationSec) {
+    const sampleRate = 24000;
+    const totalSamples = Math.ceil(totalDurationSec * sampleRate);
+    const outData = new Float32Array(totalSamples);
+
+    for (const item of buffersWithOffsets) {
+      const startSample = Math.floor(item.startSec * sampleRate);
+      const chData = item.audioBuffer.getChannelData(0);
+      for (let i = 0; i < chData.length && (startSample + i) < totalSamples; i++) {
+        outData[startSample + i] += chData[i];
+      }
+    }
+
+    const wavBuffer = new ArrayBuffer(44 + outData.length * 2);
+    const view = new DataView(wavBuffer);
+    const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + outData.length * 2, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeStr(36, 'data');
+    view.setUint32(40, outData.length * 2, true);
+
+    let offset = 44;
+    for (let i = 0; i < outData.length; i++, offset += 2) {
+      const s = Math.max(-1, Math.min(1, outData[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    return new Blob([view], { type: 'audio/wav' });
+  }
+
+  // --- TAB 2: 30 SUARA BAWAAN VIA /api/tts ---
+  async function fetchEdgeAudio(text, voiceId, rateStr, pitchStr) {
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice: voiceId, rate: rateStr, pitch: pitchStr })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Gagal memanggil API TTS Vercel.');
+    }
+    return await res.arrayBuffer();
+  }
+
+  async function previewStdVoice() {
+    const v = STD_VOICES[stdSelectEl.value];
+    const rate = (document.getElementById('stdRate').value >= 0 ? '+' : '') + document.getElementById('stdRate').value + '%';
+    const pitch = (document.getElementById('stdPitch').value >= 0 ? '+' : '') + document.getElementById('stdPitch').value + 'Hz';
+    const btn = document.getElementById('stdPreviewBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Memuat sampel...';
+    try {
+      const buf = await fetchEdgeAudio(SAMPLE_TEXTS[v.lang], v.id, rate, pitch);
+      const player = document.getElementById('stdPreviewPlayer');
+      player.src = URL.createObjectURL(new Blob([buf], { type: 'audio/mpeg' }));
+      player.play();
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🎧 Dengarkan Sampel Suara Ini';
+    }
+  }
+
+  async function runStandardTTS() {
+    const v = STD_VOICES[stdSelectEl.value];
+    const rate = (document.getElementById('stdRate').value >= 0 ? '+' : '') + document.getElementById('stdRate').value + '%';
+    const pitch = (document.getElementById('stdPitch').value >= 0 ? '+' : '') + document.getElementById('stdPitch').value + 'Hz';
+    const mode = document.getElementById('stdMode').value;
+    const status = document.getElementById('stdStatus');
+    const errBox = document.getElementById('stdError');
+    errBox.style.display = 'none';
+
+    document.getElementById('stdGenBtn').disabled = true;
+    try {
+      let finalBlob, ext;
+      if (mode === 'text') {
+        const text = document.getElementById('stdText').value.trim();
+        if (!text) throw new Error('Teks naskah masih kosong.');
+        status.textContent = '⏳ Menghasilkan suara...';
+        const buf = await fetchEdgeAudio(text, v.id, rate, pitch);
+        finalBlob = new Blob([buf], { type: 'audio/mpeg' });
+        ext = 'mp3';
+      } else {
+        const srtFile = document.getElementById('stdSrtFile').files[0];
+        if (!srtFile) throw new Error('Pilih file .SRT terlebih dahulu.');
+        const tasks = parseSRT(await srtFile.text());
+        if (tasks.length === 0) throw new Error('Format SRT tidak valid.');
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        const rendered = [];
+        let cursorSec = 0;
+
+        for (let i = 0; i < tasks.length; i++) {
+          status.textContent = `⏳ Memproses baris SRT ${i + 1} dari ${tasks.length}...`;
+          const buf = await fetchEdgeAudio(tasks[i].text, v.id, rate, pitch);
+          const decoded = await audioCtx.decodeAudioData(buf);
+          rendered.push({ audioBuffer: decoded, startSec: tasks[i].start });
+          cursorSec = Math.max(cursorSec, tasks[i].start + decoded.duration);
+        }
+        const totalSec = Math.max(cursorSec, tasks[tasks.length - 1].end);
+        finalBlob = audioBuffersToWav(rendered, totalSec);
+        ext = 'wav';
+      }
+
+      const url = URL.createObjectURL(finalBlob);
+      const player = document.getElementById('stdOutputPlayer');
+      player.src = url;
+      player.play();
+
+      const dl = document.getElementById('downloadStdLink');
+      dl.href = url;
+      dl.download = `voice_over_bawaan.${ext}`;
+      dl.style.display = 'block';
+      status.textContent = '✅ Selesai!';
+    } catch (e) {
+      errBox.textContent = e.message;
+      errBox.style.display = 'block';
+      status.textContent = '';
+    } finally {
+      document.getElementById('stdGenBtn').disabled = false;
+    }
+  }
+
+  // --- INDEXEDDB VOICE LIBRARY ---
   let db;
   const request = indexedDB.open('VoiceLibraryDB', 1);
   request.onupgradeneeded = (e) => {
@@ -233,9 +487,8 @@
       const sel2 = document.getElementById('manageVoiceSelect');
       sel1.innerHTML = '';
       sel2.innerHTML = '';
-
       if (voices.length === 0) {
-        sel1.innerHTML = '<option value="">(Belum ada suara - tambah di Tab 3)</option>';
+        sel1.innerHTML = '<option value="">(Belum ada suara - tambah di Tab 4)</option>';
         return;
       }
       voices.forEach(v => {
@@ -252,9 +505,7 @@
     const tx = db.transaction('voices', 'readonly');
     const req = tx.objectStore('voices').get(id);
     req.onsuccess = () => {
-      if (req.result) {
-        document.getElementById('samplePreviewPlayer').src = URL.createObjectURL(req.result.blob);
-      }
+      if (req.result) document.getElementById('samplePreviewPlayer').src = URL.createObjectURL(req.result.blob);
     };
   }
 
@@ -269,7 +520,7 @@
     };
   }
 
-  // --- TAB 1: SPEECH TO TEXT (GEMINI API) ---
+  // --- TAB 1: SPEECH TO TEXT ---
   async function runSTT() {
     const apiKey = geminiKeyEl.value.trim();
     const file = document.getElementById('sttFile').files[0];
@@ -337,33 +588,15 @@
     a.click();
   }
 
-  // --- TAB 2: VOICE CLONING KE COLAB GPU + SYNC SRT ---
-  function parseSRT(srtText) {
-    const regex = /\d+\s*\n(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*\n([\s\S]*?)(?=\n\s*\n|\Z)/g;
-    const entries = [];
-    let m;
-    const toSec = (t) => {
-      const [h, min, sMs] = t.trim().split(':');
-      const [s, ms] = sMs.replace('.', ',').split(',');
-      return (+h)*3600 + (+min)*60 + (+s) + (+ms)/1000;
-    };
-    while ((m = regex.exec(srtText.trim() + '\n\n')) !== null) {
-      const clean = m[3].replace(/<[^>]+>/g, '').replace(/\n/g, ' ').trim();
-      if (clean) entries.push({ start: toSec(m[1]), end: toSec(m[2]), text: clean });
-    }
-    return entries;
-  }
-
+  // --- TAB 3: VOICE CLONING KE COLAB GPU ---
   async function callColabGradio(baseUrl, text, lang, sampleBlob, fileName) {
     const cleanUrl = baseUrl.replace(/\/$/, '');
-    // 1. Upload sampel ke Gradio Colab
     const formData = new FormData();
     formData.append('files', sampleBlob, fileName || 'sample.wav');
     const upRes = await fetch(`${cleanUrl}/gradio_api/upload`, { method: 'POST', body: formData });
     if (!upRes.ok) throw new Error('Gagal terhubung ke URL Colab. Pastikan Colab masih aktif.');
     const [uploadedPath] = await upRes.json();
 
-    // 2. Panggil endpoint /predict
     const callRes = await fetch(`${cleanUrl}/gradio_api/call/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -373,61 +606,18 @@
     });
     const { event_id } = await callRes.json();
 
-    // 3. Ambil hasil dari SSE stream
     const resStream = await fetch(`${cleanUrl}/gradio_api/call/predict/${event_id}`);
     const streamText = await resStream.text();
     const lines = streamText.split('\n');
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].startsWith('event: complete')) {
         const data = JSON.parse(lines[i + 1].replace('data: ', ''));
-        const audioUrl = data[0].url;
-        const audioResp = await fetch(audioUrl);
+        const audioResp = await fetch(data[0].url);
         return await audioResp.arrayBuffer();
       }
-      if (lines[i].startsWith('event: error')) {
-        throw new Error('Error pemrosesan di Google Colab.');
-      }
+      if (lines[i].startsWith('event: error')) throw new Error('Error pemrosesan di Google Colab.');
     }
     throw new Error('Tidak ada respons audio dari Colab.');
-  }
-
-  // Menggabungkan banyak AudioBuffer sesuai timestamp ke 1 file WAV
-  function audioBuffersToWav(buffersWithOffsets, totalDurationSec) {
-    const sampleRate = 24000;
-    const totalSamples = Math.ceil(totalDurationSec * sampleRate);
-    const outData = new Float32Array(totalSamples);
-
-    for (const item of buffersWithOffsets) {
-      const startSample = Math.floor(item.startSec * sampleRate);
-      const chData = item.audioBuffer.getChannelData(0);
-      for (let i = 0; i < chData.length && (startSample + i) < totalSamples; i++) {
-        outData[startSample + i] += chData[i];
-      }
-    }
-
-    const wavBuffer = new ArrayBuffer(44 + outData.length * 2);
-    const view = new DataView(wavBuffer);
-    const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
-    writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + outData.length * 2, true);
-    writeStr(8, 'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeStr(36, 'data');
-    view.setUint32(40, outData.length * 2, true);
-
-    let offset = 44;
-    for (let i = 0; i < outData.length; i++, offset += 2) {
-      const s = Math.max(-1, Math.min(1, outData[i]));
-      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-    }
-    return new Blob([view], { type: 'audio/wav' });
   }
 
   async function runVoiceCloning() {
@@ -460,8 +650,7 @@
       } else {
         const srtFile = document.getElementById('cloneSrtFile').files[0];
         if (!srtFile) throw new Error('Pilih file .SRT terlebih dahulu.');
-        const srtText = await srtFile.text();
-        tasks = parseSRT(srtText);
+        tasks = parseSRT(await srtFile.text());
         if (tasks.length === 0) throw new Error('Isi file SRT kosong atau format tidak sesuai.');
       }
 
@@ -477,10 +666,7 @@
         cursorSec = startPos + decoded.duration + 0.25;
       }
 
-      const finalTotalSec = tasks[tasks.length - 1].end
-        ? Math.max(cursorSec, tasks[tasks.length - 1].end)
-        : cursorSec;
-
+      const finalTotalSec = tasks[tasks.length - 1].end ? Math.max(cursorSec, tasks[tasks.length - 1].end) : cursorSec;
       const finalWavBlob = audioBuffersToWav(rendered, finalTotalSec);
       const url = URL.createObjectURL(finalWavBlob);
       const player = document.getElementById('cloneOutputPlayer');
