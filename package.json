@@ -1,0 +1,7 @@
+{
+  "name": "ai-audio-studio",
+  "version": "1.0.0",
+  "dependencies": {
+    "edge-tts-universal": "^1.0.2"
+  }
+}
